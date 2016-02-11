@@ -8,6 +8,9 @@
         -webkit-app-region: drag;
         cursor: default;
       }
+      input, button {
+        -webkit-app-region: no-drag;
+      }
       #mainBox {
         font-family: sans-serif;
         font-size: 14pt;
@@ -15,14 +18,19 @@
       }
     </style>
   </head>
-  <body>
+  <body onload="document.getElementById('mainBox').focus();">
     <script>
-      require('electron').ipcRenderer.on('focused', function(event, message) {
+      var app = require('electron');
+      app.ipcRenderer.on('focused', function(event, message) {
         console.log('Focused in renderer');
         document.getElementById('mainBox').focus();
       });
+      function sendClose() {
+        app.remote.getCurrentWindow().close();
+      }
     </script>
 
     <input id='mainBox' type='text'></input>
+    <button id='closeButton' onclick='sendClose();'>Close</button>
   </body>
 </html>

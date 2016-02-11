@@ -3,11 +3,26 @@
   <head>
     <meta charset="UTF-8">
     <title>Hello World!</title>
+    <style>
+      body {
+        -webkit-app-region: drag;
+        cursor: default;
+      }
+      #mainBox {
+        font-family: sans-serif;
+        font-size: 14pt;
+        width: 90%;
+      }
+    </style>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    We are using node <script>document.write(process.versions.node)</script>,
-    Chrome <script>document.write(process.versions.chrome)</script>,
-    and Electron <script>document.write(process.versions.electron)</script>.
+    <script>
+      require('electron').ipcRenderer.on('focused', function(event, message) {
+        console.log('Focused in renderer');
+        document.getElementById('mainBox').focus();
+      });
+    </script>
+
+    <input id='mainBox' type='text'></input>
   </body>
 </html>

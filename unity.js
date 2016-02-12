@@ -33,6 +33,7 @@ var _buildJSON = (action, appname, ehruserid, patientid, unitytoken,
 
 // post JSON to endpoint //
 var _unityAction = (json, callback) => {
+    console.log('sending: ', json);
     request.post({
         url:     Url + '/Unity/UnityService.svc/json/MagicJson',
         headers: {'Content-Type': 'application/json'},
@@ -97,13 +98,13 @@ module.exports = {
     if(data.value2 != null) {
       xml += ' value2=\"' + data.value2 + '\"';
     }
-    if(data.unit != null) {
-      xml += ' units=\"' + data.unit + '\"';
+    if(data.units != null) {
+      xml += ' units=\"' + data.units + '\"';
     }
 
     xml += ' />' + '</savevitalsdatarequest>';
 
-    var json = _buildJSON('SaveVitalsData', ehrUsername, appname, patientId, token, xml);
+    var json = _buildJSON('SaveVitalsData', Appname, Ehr_username, patientId, _token, xml);
     _unityAction(json, callback);
   },
   saveProblemsData: (patientId, data, callback) => {
@@ -116,7 +117,7 @@ module.exports = {
         + "<saveproblemsdata setid=\"" + data.id + "\" fieldid=\"severity\" value1=\"" + data.severity + "\"/>"
       + "</saveproblemsdatarequest>";
 
-    var json = _buildJSON('SaveProblemsData', ehrUsername, appname, patientId, token, xml);
+    var json = _buildJSON('SaveProblemsData', Appname, Ehr_username, patientId, _token, xml);
     _unityAction(json, callback);
 }
   

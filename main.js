@@ -31,9 +31,11 @@ function createWindow () {
   });
 }
 
+let _patientID;
 function setPatient(patient) {
   console.log('Patient', patient);
   mainWindow.webContents.send('patientUpdated', patient.ID ? patient: null);
+  _patientID = patient.ID[0];
 }
 
 function setEncounter(encounter) {
@@ -161,17 +163,67 @@ app.on('will-quit', function(event) {
 });
 
 electron.ipcMain.on('boxCommand', function(event, cmd) {
-  console.log('command: ' + cmd ? cmd: '<blank>');
+  console.log('command: ' + (cmd ? cmd: '<blank>'));
   switch(cmd.toLowerCase()) {
     case 'quit':
     case 'exit':
       mainWindow.close();
-      break;
+      return;
     case '':
       mainWindow.hide();
-      break;
+      return;
   }
   if(cmd.indexOf('!') == 0) {
     uai.stdin.write(cmd.substring(1) + '\n');
+    return;
+  }
+
+  cmd = cmd.toLowerCase();
+  const bpRexp = /(bp) (\d+)[\/\\](\d+)/;
+  let res;
+  if((res = bpRexp.exec(cmd)) != null) {
+    console.dir(res);
+    let data = { type: res[1], value: res[2], value2: res[3] };
+    unity.saveVital(_patientID, data, (err, body) => {
+      if(err) {
+        console.error('error', err, body);
+        return;
+      } 
+      console.log(body);
+    });
+    return;
+  }
+  const wtRexp = /(wt|weight) (\d+(?:.\d+)?) ?(?:(lb|kg|pound|kilogram)s?)?/;
+  if((res = wtRexp.exec(cmd)) != null) {
+    console.dir(res);
+    let data = { type: 'wt', value: res[2] };
+    if(res[3]) {
+      switch(res[3]) {
+        case 'lb':
+        case 'pound':
+          data.units = 'us';
+      }
+    }
+    //console.log(data);
+    unity.saveVital(_patientID, data, (err, body) => {
+      if(err) {
+        console.error('error', err, body);
+        return;
+      } 
+      console.log(body);
+    });
+    return;
+  }
+  const vitRexp = /(o2|pulse|resp|pain) (\d+)/;
+  if((res = vitRexp.exec(cmd)) != null) {
+    let data = { type: res[1], value: res[2] };
+    unity.saveVital(_patientID, data, (err, body) => {
+      if(err) {
+        console.error('error', err, body);
+        return;
+      } 
+      console.log(body);
+    });
+    return;
   }
 });

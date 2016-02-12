@@ -18,19 +18,62 @@
       }
     </style>
   </head>
-  <body onload="document.getElementById('mainBox').focus();">
+  <body onload="doLoad();">
     <script>
       var app = require('electron');
       app.ipcRenderer.on('focused', function(event, message) {
         console.log('Focused in renderer');
         document.getElementById('mainBox').focus();
       });
+      app.ipcRenderer.on('patientUpdated', function(event, patient) {
+        if(patient) {
+          val = patient.LastName + ', ' + patient.FirstName + ' ' + patient.MiddleName;
+        } else {
+          val = 'None';
+        }
+        document.getElementById('patient').innerText = val;
+      });
+      app.ipcRenderer.on('encounterUpdated', function(event, encounter) {
+        if(encounter) {
+          val = encounter.DateTime + ' ' + encounter.EncounterType;
+        } else {
+          val = 'None';
+        }
+        document.getElementById('encounter').innerText = val;
+      });
+      app.ipcRenderer.on('hieUpdated', function(event, hie) {
+        if(hie) {
+          val = hie.emailAddress;
+        } else {
+          val = 'None';
+        }
+        document.getElementById('user').innerText = val;
+      });
+      
       function sendClose() {
         app.remote.getCurrentWindow().close();
       }
+      function submitHandler(e) {
+        var box = document.getElementById('mainBox');
+
+        app.ipcRenderer.send('boxCommand', box.value);
+        box.value = '';
+        return false;
+      }
+      function doLoad() {
+        document.getElementById('mainBox').focus();
+      }
     </script>
 
-    <input id='mainBox' type='text'></input>
-    <button id='closeButton' onclick='sendClose();'>Close</button>
+    <div>
+      <div id='patient'>&nbsp;</div>
+      <div id='user'>&nsbsp;</div>
+      <div id='encounter'>&nbsp;</div>
+    </div>
+    <form onsubmit='return submitHandler(event);'>
+      <input id='mainBox' type='text'></input>
+      <button id='closeButton' type='button' onclick='sendClose();'>Close</button>
+    </form>
+    
   </body>
 </html>
